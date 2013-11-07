@@ -1,5 +1,5 @@
 Snowwhite Game Server
-================a====
+=====================
 
 Game server for Snow White game.
 
