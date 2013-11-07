@@ -1,0 +1,53 @@
+{
+  "name": "snowhite-server",
+  "preferGlobal": true,
+  "version": "0.0.1",
+  "author": "Snow White team",
+  "description": "Server handling socket connection between mobile and desktop clients",
+  "contributors": [ 
+    {
+      "name": "Maciej Kumorek",
+      "email" : "mkumorek@gmail.com"
+    },
+    {
+      "name" : "Derek Bekoe"
+    },
+    {
+      "name" : "Christa Mpundu"
+    },
+    {
+      "name" : "Minh Nguyen"
+    },
+    {
+      "name" : "Ellie Ford"
+    },
+    {
+      "name" : "Adam Mooney"
+    }
+  ],
+  "bin": {
+    "snowhite-server": "./server.js"
+  },
+  "scripts": {
+    "start": "node ./server.js",
+    "test": "echo This will run tests",
+    "predeploy": "echo This will be run before deploying the app",
+    "postdeploy": "echo This will be run after deploying the app"
+  },
+  "main": "./lib/http-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/macqm/snowwhite-server"
+  },
+  "keywords": [
+    "cli",
+    "http",
+    "server"
+  ],
+  "dependencies" : {
+  },
+  "analyze": false, 
+  "engines": {
+    "node": ">=0.8"
+  }
+}
