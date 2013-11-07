@@ -8,8 +8,6 @@ var address = "127.0.0.1";
 // Empty array of clients
 var clients = [];
 
-
-
 net.createServer(function (socket)
 {
 	var client = socket.remoteAddress + ":" + socket.remotePort;

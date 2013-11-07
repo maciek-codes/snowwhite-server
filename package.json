@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "node ./server.js",
-    "test": "echo This will run tests",
+    "test": "node_modules\\.bin\\mocha",
     "predeploy": "echo This will be run before deploying the app",
     "postdeploy": "echo This will be run after deploying the app"
   },
@@ -45,6 +45,8 @@
     "server"
   ],
   "dependencies" : {
+    "mocha" : "1.14.x",
+    "sinon" : "1.7.x"
   },
   "analyze": false, 
   "engines": {
