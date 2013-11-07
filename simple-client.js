@@ -9,7 +9,7 @@ client.connect(port, host, function () {
 
     console.log('CONNECTED TO: ' + host + ':' + port);
 
-    client.write('I am Chuck Norris!');
+    client.write('{ "clientType" : "mobile" }');
 
 });
 
