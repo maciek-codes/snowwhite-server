@@ -35,12 +35,10 @@ net.createServer(function (socket)
 		console.log(clients);
 
 	}).on('close', function() {
-
-		console.log("Done");
 		
-		// Remove 1 item at position of client
-		//clients.splice(clients.indexOf(client), 1);
-
+		socket.write("Bye " + client.getName);
+		clients.splice(clients.indexOf(client), 1);
+		
 
 	}).on('error', function (err){
 		console.log("Error: " + err);
