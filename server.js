@@ -32,8 +32,6 @@ net.createServer(function (socket)
 
 	}).on('connect', function() {
 
-		socket.write("Hi " + client);
-
 		console.log(clients);
 
 	}).on('close', function() {
@@ -50,3 +48,4 @@ net.createServer(function (socket)
 
 }).listen(port, address);
 
+console.log("Listening on " + address + " port " + port);
