@@ -46,7 +46,8 @@
   ],
   "dependencies" : {
     "mocha" : "1.14.x",
-    "sinon" : "1.7.x"
+    "sinon" : "1.7.x",
+    "read" : "1.0.x" 
   },
   "analyze": false, 
   "engines": {

@@ -1,5 +1,7 @@
 var net = require('net'),
 	querystring = require('querystring'),
+	read = require('read'),
+	os = require('os'),
 	Client = require('./client')
 
 var port = 1337;
@@ -8,10 +10,9 @@ var address = "0.0.0.0";
 // Empty array of clients
 var clients = [];
 
-var os = require( 'os' );
-
 // Get networking interfaces and find ip address
 var networkInterfaces = os.networkInterfaces();
+var addressesToChoose = [];
 for(var inter in networkInterfaces)
 {
 	var indexes = networkInterfaces[inter];
@@ -25,15 +26,41 @@ for(var inter in networkInterfaces)
 		if(addressInfo.family != 'IPv4' || addressInfo.internal == true)
 			continue;
 
-		// For now assume address begins with this:
-		if(addressInfo.address.substring(0,7) != "192.168")
-			continue;
-
-		address = addressInfo.address;
+		addressesToChoose.push(addressInfo.address);
 	}
 }
+console.log("Availiable addresses: ");
+var i = 1;
+for(var addr in addressesToChoose)
+{
+	console.log(i +". " + addressesToChoose[addr])
+	i++;
+}
 
-net.createServer(function (socket)
+console.log("Press key to choose:");
+
+read({ prompt : 'Choice: ' }, function (err, choice) {
+
+	if(err) {
+		return;
+	}
+
+	if(isNaN(choice) || choice < 1 || choice > addressesToChoose.length) {
+		console.error("Wrong choice!");
+		return;
+	}
+	process.stdin.destroy();
+	address = addressesToChoose[choice-1];
+	
+	console.log("You chose: " + address);
+
+	net.createServer(createServerCallBack).
+		listen(port, address);
+
+	console.log("Listening on " + address + " port " + port);
+});
+
+function createServerCallBack(socket)
 {
 	var client = socket.remoteAddress + ":" + socket.remotePort;
 
@@ -77,6 +104,4 @@ net.createServer(function (socket)
 		console.log(err);
 	});
 
-}).listen(port, address);
-
-console.log("Listening on " + address + " port " + port);
+}
