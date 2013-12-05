@@ -3,16 +3,35 @@ var net = require('net'),
 	Client = require('./client')
 
 var port = 1337;
-var address = "192.168.69.1";
+var address = "0.0.0.0";
 
 // Empty array of clients
 var clients = [];
 
 var os = require( 'os' );
 
-var networkInterfaces = os.networkInterfaces( );
+// Get networking interfaces and find ip address
+var networkInterfaces = os.networkInterfaces();
+for(var inter in networkInterfaces)
+{
+	var indexes = networkInterfaces[inter];
 
-console.log( networkInterfaces );
+	// Each interface might have two addresses
+	for(var index in indexes)
+	{
+		var addressInfo = networkInterfaces[inter][index];
+
+		// Ignore IPv6 and internal adapters
+		if(addressInfo.family != 'IPv4' || addressInfo.internal == true)
+			continue;
+
+		// For now assume address begins with this:
+		if(addressInfo.address.substring(0,7) != "192.168")
+			continue;
+
+		address = addressInfo.address;
+	}
+}
 
 net.createServer(function (socket)
 {
