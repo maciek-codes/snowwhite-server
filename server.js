@@ -68,13 +68,13 @@ function createServerCallBack(socket)
 
 	socket.on('data', function (rawdata) {
 
-		var data = rawdata.toString('utf-8');
+		var data = rawdata.toString();
 
 		console.log("Data: " + data);
 
 		try
 		{
-			var clientData = JSON.parse();
+			var clientData = JSON.parse(rawdata);
 
 			if(clientData.clientType != undefined)
 			{
@@ -83,7 +83,7 @@ function createServerCallBack(socket)
 				clients.push(newClient);
 				console.log("I added " + newClient.getName() + " and it's a type " + newClient.getClientType());
 			}
-			socket.write(1);
+			socket.write("1");
 		}
 		catch(err)
 		{
@@ -96,7 +96,8 @@ function createServerCallBack(socket)
 
 	}).on('close', function() {
 		
-		socket.write("Bye " + client.getName);
+		//socket.write("Bye " + client.getName);
+		console.log(client);
 		clients.splice(clients.indexOf(client), 1);
 		
 
