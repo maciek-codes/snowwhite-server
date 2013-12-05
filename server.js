@@ -3,10 +3,16 @@ var net = require('net'),
 	Client = require('./client')
 
 var port = 1337;
-var address = "127.0.0.1";
+var address = "192.168.69.1";
 
 // Empty array of clients
 var clients = [];
+
+var os = require( 'os' );
+
+var networkInterfaces = os.networkInterfaces( );
+
+console.log( networkInterfaces );
 
 net.createServer(function (socket)
 {
@@ -14,21 +20,29 @@ net.createServer(function (socket)
 
 	console.log("Connected: " + client);
 
-	socket.on('data', function (data) {
+	socket.on('data', function (rawdata) {
+
+		var data = rawdata.toString('utf-8');
 
 		console.log("Data: " + data);
 
-		var clientData = JSON.parse(data);
-
-		if(clientData.clientType != undefined)
+		try
 		{
-			var newClient = new Client(client, clientData.clientType);
+			var clientData = JSON.parse();
 
-			clients.push(newClient);
-			console.log("I added " + newClient.getName() + " and it's a type " + newClient.getClientType());
+			if(clientData.clientType != undefined)
+			{
+				var newClient = new Client(client, clientData.clientType);
+
+				clients.push(newClient);
+				console.log("I added " + newClient.getName() + " and it's a type " + newClient.getClientType());
+			}
+			socket.write(1);
 		}
-
-		socket.write("You said: " + data + " Thanks!");
+		catch(err)
+		{
+			console.log(err);
+		}
 
 	}).on('connect', function() {
 
@@ -41,7 +55,7 @@ net.createServer(function (socket)
 		
 
 	}).on('error', function (err){
-		console.log("Error: " + err);
+		console.log(err);
 	});
 
 }).listen(port, address);

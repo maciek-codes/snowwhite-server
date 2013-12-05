@@ -16,6 +16,5 @@ describe("Client", function () {
 
 	it('should have type', function() {
 		assert.equal(type, testClient.getClientType());
-	}) 
-
+	});
 });
