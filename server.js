@@ -148,6 +148,9 @@ function createServerCallBack(socket)
 			}
 		}
 
+		console.log("Client disconnected.");
+		console.log(clients);
+
 	}).on('error', function (err){
 		console.log(err);
 	});
