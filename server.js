@@ -13,6 +13,7 @@ var clients = [];
 // Get networking interfaces and find ip address
 var networkInterfaces = os.networkInterfaces();
 var addressesToChoose = [];
+
 for(var inter in networkInterfaces)
 {
 	var indexes = networkInterfaces[inter];
@@ -29,6 +30,7 @@ for(var inter in networkInterfaces)
 		addressesToChoose.push(addressInfo.address);
 	}
 }
+
 console.log("Availiable addresses: ");
 var i = 1;
 for(var addr in addressesToChoose)
@@ -62,9 +64,10 @@ read({ prompt : 'Choice: ' }, function (err, choice) {
 
 function createServerCallBack(socket)
 {
-	var client = socket.remoteAddress + ":" + socket.remotePort;
+	var clientAddress = socket.remoteAddress;
+	var clientPort = socket.remotePort;
 
-	console.log("Connected: " + client);
+	console.log("Connected: " + clientAddress + ":" + clientPort);
 
 	socket.on('data', function (rawdata) {
 
@@ -74,16 +77,58 @@ function createServerCallBack(socket)
 
 		try
 		{
-			var clientData = JSON.parse(rawdata);
+			var originalMessage = JSON.parse(rawdata);
 
-			if(clientData.clientType != undefined)
-			{
-				var newClient = new Client(client, clientData.clientType);
+			var messageDestination = originalMessage.dest;
+			var sender = originalMessage.sender;
+			var message = originalMessage.msg;
 
-				clients.push(newClient);
-				console.log("I added " + newClient.getName() + " and it's a type " + newClient.getClientType());
+			if(messageDestination == 0) {
+				// Message is to the server only
+
+				if(message.type == "hello")
+				{
+					var clientType = message.client;
+
+					// Remember this client
+					clients.push(new Client(clientAddress, clientPort, clientType, socket));
+					console.log(clients);
+
+					// Send confirmation of successful registration
+					socket.write("1");
+				}
+				return;
+
+			} else if(messageDestination == 1) {
+
+				// Send it to PC client
+				var pcClient;
+				for(var i = 0; i < clients.length; i++) {
+					
+					if(clients[i].type != "pc")
+						continue;
+					
+					pcClient = clients[i];
+					break;
+				}
+
+				pcClient.socket.write(JSON.stringify(originalMessage));
+
+			} else if(messageDestination == -1) {
+				
+				// Send to EVERYONE
+				for(var i = 0; i < clients.length; i++) {
+
+					if(clients[i].type == "pc")
+						continue;
+
+					clients[i].socket.write(JSON.stringify(originalMessage));
+				}
+
+			} else {
+				// Send it to mobile client
+				clients[messageDestination].socket.write(JSON.stringify(originalMessage));
 			}
-			socket.write("1");
 		}
 		catch(err)
 		{
@@ -96,10 +141,12 @@ function createServerCallBack(socket)
 
 	}).on('close', function() {
 		
-		//socket.write("Bye " + client.getName);
-		console.log(client);
-		clients.splice(clients.indexOf(client), 1);
-		
+		for(var i = 0; i < clients.length; i++) {
+			if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort)
+			{
+				clients.splice(i, 1);
+			}
+		}
 
 	}).on('error', function (err){
 		console.log(err);
