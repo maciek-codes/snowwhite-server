@@ -1,6 +1,6 @@
 var net = require('net');
 
-var host = '192.168.69.101';
+var host = '169.254.85.159';
 var port = 1337;
 
 var client = new net.Socket();
@@ -9,7 +9,7 @@ client.connect(port, host, function () {
 
     console.log('CONNECTED TO: ' + host + ':' + port);
 
-    client.write('{ "clientType" : "mobile" }');
+    client.write('{ "dest":0, "msg": {"type" : "hello", "client" : "mobile"} }');
 
 });
 

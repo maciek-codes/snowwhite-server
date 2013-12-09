@@ -70,7 +70,6 @@ function createServerCallBack(socket)
 	console.log("Connected: " + clientAddress + ":" + clientPort);
 
 	socket.on('data', function (rawdata) {
-
 		var data = rawdata.toString();
 
 		console.log("Data: " + data);
@@ -112,7 +111,16 @@ function createServerCallBack(socket)
 					break;
 				}
 
+				if(pcClient === undefined)
+				{
+					console.log("PC client must be connected.");
+					return;
+				}
+
 				pcClient.socket.write(JSON.stringify(originalMessage));
+
+				// Send the confirmation
+				socket.write("1");
 
 			} else if(messageDestination == -1) {
 				
@@ -125,16 +133,21 @@ function createServerCallBack(socket)
 					clients[i].socket.write(JSON.stringify(originalMessage));
 				}
 
+				// Send the confirmation
+				socket.write("1");
+
 			} else {
 				// Send it to mobile client
 				clients[messageDestination].socket.write(JSON.stringify(originalMessage));
+
+				// Send the confirmation
+				socket.write("1");
 			}
 		}
 		catch(err)
 		{
 			console.log(err);
 		}
-
 	}).on('connect', function() {
 
 		console.log(clients);
@@ -154,5 +167,5 @@ function createServerCallBack(socket)
 	}).on('error', function (err){
 		console.log(err);
 	});
-
 }
+
