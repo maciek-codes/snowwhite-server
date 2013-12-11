@@ -84,7 +84,7 @@ function createServerCallBack(socket)
 		var data = rawdata.toString();
 		
 		try {
-			
+
 			var originalMessage = JSON.parse(rawdata);
 			var messageDestination = originalMessage.dest;
 			var message = originalMessage.msg;
@@ -94,10 +94,44 @@ function createServerCallBack(socket)
 
 				if(message.type == "hello") {
 					var clientType = message.client;
-					var clientId = clients.length + 1;
-					var newClientObj = new Client(clientAddress, clientPort, clientType, socket, clientId);
+					var nextIndex = clients.length + 1;
 
-					clients.push(newClientObj);
+					var clientId = -1;
+
+					if(clientType == "pc") {
+						clientId = 1;
+					} else {
+
+						var takenIds = [];
+
+						for(var i = 0; i < clients.length; ++i) {
+							if(clients[i].getClientType() != "mobile")
+								continue;
+
+							takenIds.push(clients[i].getId());
+						}
+
+						var desiredId = 2;
+
+						while(clientId < 0) {
+
+							// This id is free, take it
+							if(takenIds.indexOf(desiredId) == -1) {
+								clientId = desiredId;
+							} else {
+								desiredId++;
+							}
+						}
+					}
+
+
+					var newClientObj = new Client(clientAddress, clientPort, clientType, socket, 
+						clientId, nextIndex);
+
+					// Add new client to the array
+					var newLength = clients.push(newClientObj);
+					
+					// Print out new clients
 					console.log("Connected new client with id " + newClientObj.getId() +
 						" of type " + newClientObj.getClientType() +
 						" address: " + newClientObj.getAddress() + " on port: " + newClientObj.getPort());
@@ -153,7 +187,8 @@ function createServerCallBack(socket)
 			} else {
 				
 				// Send it to mobile client
-				clients[messageDestination-1].socket.write(JSON.stringify(originalMessage));
+				var currenClient = clients[arrayPos.getArrayPos()];
+				currenClient.socket.write(JSON.stringify(originalMessage));
 			}
 		}
 		catch(err)
@@ -171,8 +206,19 @@ function createServerCallBack(socket)
 			}
 		}
 
-		if(clientId >= 0 && clientId < clients.length) { 
+		if(clientId >= 0 && clientId < clients.length) {
+
+			// Log disconnecting client
 			console.log("Client with id " + clientId + " disconnected.");
+
+			// Decrement position in array of elements after this client id
+			for(var i = clientId; i < clients.length; ++i) {
+				var oldPosition = clients[i].getArrayPos();
+				oldPosition--;
+				clients[i].setArrayPos(oldPosition);
+			}
+
+			// Remove client from the array
 			clients.splice(clientId, 1);
 		}
 
