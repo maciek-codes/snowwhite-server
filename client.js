@@ -1,8 +1,9 @@
-var Client = function Client(address, port, clientType, socket) {
+var Client = function Client(address, port, clientType, socket, id) {
 	this.clientType = clientType;
 	this.address = address;
 	this.port = port;
 	this.socket = socket;
+	this.id = id;
 };
 
 Client.prototype.getAddress = function() {
@@ -20,6 +21,10 @@ Client.prototype.getClientType = function() {
 
 Client.prototype.getSocket = function() {
 	return this.socket;
+}
+
+Client.prototype.getId = function() {
+	return this.id;
 }
 
 module.exports = Client;
