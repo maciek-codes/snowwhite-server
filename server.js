@@ -9,6 +9,7 @@ var address = "0.0.0.0";
 
 // Empty array of clients
 var clients = [];
+var mobileClientCount = 0;
 
 // Get networking interfaces and find ip address
 var networkInterfaces = os.networkInterfaces();
@@ -72,14 +73,21 @@ function createServerCallBack(socket)
 	socket.on('data', function (rawdata) {
 		var data = rawdata.toString();
 
-		console.log("Data: " + data);
+		//console.log("Data: " + data);
 
 		try
 		{
 			var originalMessage = JSON.parse(rawdata);
 
 			var messageDestination = originalMessage.dest;
-			var sender = originalMessage.sender;
+			var sender = -1;
+			for(var i = 0; i < clients.length; i++) {
+				if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort)
+				{
+					sender = i+1;
+				}
+			}
+			originalMessage.sender = sender;
 			var message = originalMessage.msg;
 
 			if(messageDestination == 0) {
@@ -88,13 +96,13 @@ function createServerCallBack(socket)
 				if(message.type == "hello")
 				{
 					var clientType = message.client;
+					var clientId;
 
-					// Remember this client
-					clients.push(new Client(clientAddress, clientPort, clientType, socket));
+					clients.push(new Client(clientAddress, clientPort, clientType, socket, clientId));
 					console.log(clients);
 
 					// Send confirmation of successful registration
-					socket.write("1");
+					//socket.write("1");
 				}
 				return;
 
@@ -104,7 +112,7 @@ function createServerCallBack(socket)
 				var pcClient;
 				for(var i = 0; i < clients.length; i++) {
 					
-					if(clients[i].type != "pc")
+					if(clients[i].getClientType() != "pc")
 						continue;
 					
 					pcClient = clients[i];
@@ -117,10 +125,10 @@ function createServerCallBack(socket)
 					return;
 				}
 
-				pcClient.socket.write(JSON.stringify(originalMessage));
+				pcClient.socket.write(JSON.stringify(originalMessage),'ascii');
 
 				// Send the confirmation
-				socket.write("1");
+				//socket.write("1");
 
 			} else if(messageDestination == -1) {
 				
@@ -134,14 +142,14 @@ function createServerCallBack(socket)
 				}
 
 				// Send the confirmation
-				socket.write("1");
+				//socket.write("1");
 
 			} else {
 				// Send it to mobile client
 				clients[messageDestination].socket.write(JSON.stringify(originalMessage));
 
 				// Send the confirmation
-				socket.write("1");
+				//socket.write("1");
 			}
 		}
 		catch(err)
@@ -158,6 +166,7 @@ function createServerCallBack(socket)
 			if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort)
 			{
 				clients.splice(i, 1);
+				
 			}
 		}
 
