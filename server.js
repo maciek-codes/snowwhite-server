@@ -88,15 +88,6 @@ function createServerCallBack(socket)
 			var originalMessage = JSON.parse(rawdata);
 
 			var messageDestination = originalMessage.dest;
-			var sender = -1;
-			for(var i = 0; i < clients.length; i++) {
-				if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort)
-				{
-					sender = clients[i].getId();
-				}
-			}
-			
-			originalMessage.sender = sender;
 			var message = originalMessage.msg;
 
 			if(messageDestination == 0) {
