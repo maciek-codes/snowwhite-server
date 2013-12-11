@@ -199,27 +199,27 @@ function createServerCallBack(socket)
 
 	}).on('close', function() {
 		
-		var clientId = -1;
+		var clientIndex = -1;
 		for(var i = 0; i < clients.length; i++) {
 			if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort) {
-				clientId = i;
+				clientIndex = i;
 			}
 		}
 
-		if(clientId >= 0 && clientId < clients.length) {
+		if(clientIndex >= 0 && clientIndex < clients.length) {
 
 			// Log disconnecting client
-			console.log("Client with id " + clientId + " disconnected.");
+			console.log("Client with id " + clients[i].getId() + " disconnected.");
 
 			// Decrement position in array of elements after this client id
-			for(var i = clientId; i < clients.length; ++i) {
+			for(var i = clientIndex; i < clients.length; ++i) {
 				var oldPosition = clients[i].getArrayPos();
 				oldPosition--;
 				clients[i].setArrayPos(oldPosition);
 			}
 
 			// Remove client from the array
-			clients.splice(clientId, 1);
+			clients.splice(clientIndex, 1);
 		}
 
 	}).on('error', function (err){
