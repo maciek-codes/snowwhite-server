@@ -70,11 +70,19 @@ function createServerCallBack(socket)
 
 	console.log("Connected: " + clientAddress + ":" + clientPort);
 
+	// Don't timeout
+	socket.setKeepAlive(true);
+
+	// Disable "Nagle" algorithm for buffering
+	socket.setNoDelay(true);
+
+	// Set encoding to ASCII
+	socket.setEncoding("ascii");
+
 	socket.on('data', function (rawdata) {
+		
 		var data = rawdata.toString();
-
-		//console.log("Data: " + data);
-
+		
 		try
 		{
 			var originalMessage = JSON.parse(rawdata);
@@ -84,9 +92,10 @@ function createServerCallBack(socket)
 			for(var i = 0; i < clients.length; i++) {
 				if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort)
 				{
-					sender = i+1;
+					sender = clients[i].getId();
 				}
 			}
+			
 			originalMessage.sender = sender;
 			var message = originalMessage.msg;
 
@@ -96,13 +105,28 @@ function createServerCallBack(socket)
 				if(message.type == "hello")
 				{
 					var clientType = message.client;
-					var clientId;
+					var clientId = clients.length;
+					var newClientObj = new Client(clientAddress, clientPort, clientType, socket, clientId);
 
-					clients.push(new Client(clientAddress, clientPort, clientType, socket, clientId));
-					console.log(clients);
+					clients.push(newClientObj);
+					console.log("Connected new client with id " + newClientObj.getId() +
+						" of type " + newClientObj.getClientType() +
+						" address: " + newClientObj.getAddress() + " on port: " + newClientObj.getPort());
 
 					// Send confirmation of successful registration
-					//socket.write("1");
+					if(clientType == "mobile")
+					{
+						var response = {
+							dest: clientId,
+							sender: 0,
+							msg : {
+								type: "yourId",
+								id: clientId
+							}
+						};
+
+						socket.write(JSON.stringify(response));
+					}
 				}
 				return;
 
@@ -110,6 +134,7 @@ function createServerCallBack(socket)
 
 				// Send it to PC client
 				var pcClient;
+
 				for(var i = 0; i < clients.length; i++) {
 					
 					if(clients[i].getClientType() != "pc")
@@ -121,14 +146,11 @@ function createServerCallBack(socket)
 
 				if(pcClient === undefined)
 				{
-					console.log("PC client must be connected.");
+					console.error("PC client must be connected.");
 					return;
 				}
 
-				pcClient.socket.write(JSON.stringify(originalMessage),'ascii');
-
-				// Send the confirmation
-				//socket.write("1");
+				pcClient.socket.write(JSON.stringify(originalMessage));
 
 			} else if(messageDestination == -1) {
 				
@@ -141,15 +163,10 @@ function createServerCallBack(socket)
 					clients[i].socket.write(JSON.stringify(originalMessage));
 				}
 
-				// Send the confirmation
-				//socket.write("1");
-
 			} else {
+				
 				// Send it to mobile client
 				clients[messageDestination].socket.write(JSON.stringify(originalMessage));
-
-				// Send the confirmation
-				//socket.write("1");
 			}
 		}
 		catch(err)
@@ -158,20 +175,19 @@ function createServerCallBack(socket)
 		}
 	}).on('connect', function() {
 
-		console.log(clients);
-
 	}).on('close', function() {
 		
+		var clientId = -1;
 		for(var i = 0; i < clients.length; i++) {
-			if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort)
-			{
-				clients.splice(i, 1);
-				
+			if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort) {
+				clientId = i;
 			}
 		}
 
-		console.log("Client disconnected.");
-		console.log(clients);
+		if(clientId >= 0 && clientId < clients.length) { 
+			console.log("Client with id " + clientId + " disconnected.");
+			clients.splice(clientId, 1);
+		}
 
 	}).on('error', function (err){
 		console.log(err);
