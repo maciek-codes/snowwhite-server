@@ -83,20 +83,18 @@ function createServerCallBack(socket)
 		
 		var data = rawdata.toString();
 		
-		try
-		{
+		try {
+			
 			var originalMessage = JSON.parse(rawdata);
-
 			var messageDestination = originalMessage.dest;
 			var message = originalMessage.msg;
 
 			if(messageDestination == 0) {
 				// Message is to the server only
 
-				if(message.type == "hello")
-				{
+				if(message.type == "hello") {
 					var clientType = message.client;
-					var clientId = clients.length;
+					var clientId = clients.length + 1;
 					var newClientObj = new Client(clientAddress, clientPort, clientType, socket, clientId);
 
 					clients.push(newClientObj);
@@ -105,8 +103,7 @@ function createServerCallBack(socket)
 						" address: " + newClientObj.getAddress() + " on port: " + newClientObj.getPort());
 
 					// Send confirmation of successful registration
-					if(clientType == "mobile")
-					{
+					if(clientType == "mobile") {
 						var response = {
 							dest: clientId,
 							sender: 0,
@@ -135,8 +132,7 @@ function createServerCallBack(socket)
 					break;
 				}
 
-				if(pcClient === undefined)
-				{
+				if(pcClient === undefined) {
 					console.error("PC client must be connected.");
 					return;
 				}
@@ -157,7 +153,7 @@ function createServerCallBack(socket)
 			} else {
 				
 				// Send it to mobile client
-				clients[messageDestination].socket.write(JSON.stringify(originalMessage));
+				clients[messageDestination-1].socket.write(JSON.stringify(originalMessage));
 			}
 		}
 		catch(err)
