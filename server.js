@@ -209,7 +209,7 @@ function createServerCallBack(socket)
 		if(clientIndex >= 0 && clientIndex < clients.length) {
 
 			// Log disconnecting client
-			console.log("Client with id " + clients[i].getId() + " disconnected.");
+			console.log("Client with id " + clients[clientIndex].getId() + " disconnected.");
 
 			// Decrement position in array of elements after this client id
 			for(var i = clientIndex; i < clients.length; ++i) {
