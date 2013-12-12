@@ -126,7 +126,7 @@ function createServerCallBack(socket)
 
 
 					var newClientObj = new Client(clientAddress, clientPort, clientType, socket, 
-						clientId, nextIndex);
+						clientId);
 
 					// Add new client to the array
 					var newLength = clients.push(newClientObj);
@@ -186,8 +186,15 @@ function createServerCallBack(socket)
 
 			} else {
 				
-				// Send it to mobile client
-				var currenClient = clients[arrayPos.getArrayPos()];
+				var clientIndex = -1;
+				for(var i = 0; i < clients.length; i++) {
+					if(clients[i].getId() == messageDestination) {
+						clientIndex = i;
+						break;
+					}
+				}
+
+				var currenClient = clients[clientIndex];
 				currenClient.socket.write(JSON.stringify(originalMessage));
 			}
 		}
@@ -210,14 +217,6 @@ function createServerCallBack(socket)
 
 			// Log disconnecting client
 			console.log("Client with id " + clients[clientIndex].getId() + " disconnected.");
-
-			// Decrement position in array of elements after this client id
-			for(var i = clientIndex; i < clients.length; ++i) {
-				var oldPosition = clients[i].getArrayPos();
-				oldPosition--;
-				clients[i].setArrayPos(oldPosition);
-			}
-
 			// Remove client from the array
 			clients.splice(clientIndex, 1);
 		}

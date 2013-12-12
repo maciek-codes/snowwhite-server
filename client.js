@@ -1,10 +1,9 @@
-var Client = function Client(address, port, clientType, socket, id, arrayPos) {
+var Client = function Client(address, port, clientType, socket, id) {
 	this.clientType = clientType;
 	this.address = address;
 	this.port = port;
 	this.socket = socket;
 	this.id = id;
-	this.arrayPos = arrayPos;
 };
 
 Client.prototype.getAddress = function() {
@@ -26,14 +25,6 @@ Client.prototype.getSocket = function() {
 
 Client.prototype.getId = function() {
 	return this.id;
-}
-
-Client.prototype.getArrayPos = function() {
-	return this.arrayPos;
-}
-
-Client.prototype.setArrayPos = function(pos) {
-	this.arrayPos = pos;
 }
 
 module.exports = Client;
