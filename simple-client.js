@@ -43,7 +43,9 @@ client.on('data', function (data) {
 stdin.on('keypress', function (chunk, key) {
   process.stdout.write('Get Chunk: ' + chunk + '\n');
   if (key && key.ctrl && key.name == 'c') process.exit();
-  if( key.name == 'c')  client.write('{ "dest":0, "msg": {"type" : "catch", "ballId" : ballId_caught, "sender" : 2} }');
+  if( key.name == 'c') {
+	client.write('{ "dest":0, "msg": {"type" : "catch", "ballId" : '+ballId_caught + ', "sender" : 2} }');
+  }
   if( key.name == 't'){
 	client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ballId_caught+', "recipient" : 1} }');
 	console.log('throw ball id ' + ballId_caught);
