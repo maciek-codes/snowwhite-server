@@ -1,50 +1,228 @@
 var net = require('net'),
 	querystring = require('querystring'),
+	read = require('read'),
+	os = require('os'),
 	Client = require('./client')
 
 var port = 1337;
-var address = "127.0.0.1";
+var address = "0.0.0.0";
 
 // Empty array of clients
 var clients = [];
+var mobileClientCount = 0;
 
-net.createServer(function (socket)
+// Get networking interfaces and find ip address
+var networkInterfaces = os.networkInterfaces();
+var addressesToChoose = [];
+
+for(var inter in networkInterfaces)
 {
-	var client = socket.remoteAddress + ":" + socket.remotePort;
+	var indexes = networkInterfaces[inter];
 
-	console.log("Connected: " + client);
+	// Each interface might have two addresses
+	for(var index in indexes)
+	{
+		var addressInfo = networkInterfaces[inter][index];
 
-	socket.on('data', function (data) {
+		// Ignore IPv6 and internal adapters
+		if(addressInfo.family != 'IPv4' || addressInfo.internal == true)
+			continue;
 
-		console.log("Data: " + data);
+		addressesToChoose.push(addressInfo.address);
+	}
+}
 
-		var clientData = JSON.parse(data);
+console.log("Availiable addresses: ");
+var i = 1;
+for(var addr in addressesToChoose)
+{
+	console.log(i +". " + addressesToChoose[addr])
+	i++;
+}
 
-		if(clientData.clientType != undefined)
-		{
-			var newClient = new Client(client, clientData.clientType);
+console.log("Press key to choose:");
 
-			clients.push(newClient);
-			console.log("I added " + newClient.getName() + " and it's a type " + newClient.getClientType());
+read({ prompt : 'Choice: ' }, function (err, choice) {
+
+	if(err) {
+		return;
+	}
+
+	if(isNaN(choice) || choice < 1 || choice > addressesToChoose.length) {
+		console.error("Wrong choice!");
+		return;
+	}
+	process.stdin.destroy();
+	address = addressesToChoose[choice-1];
+	
+	console.log("You chose: " + address);
+
+	net.createServer(createServerCallBack).
+		listen(port, address);
+
+	console.log("Listening on " + address + " port " + port);
+});
+
+function createServerCallBack(socket)
+{
+	var clientAddress = socket.remoteAddress;
+	var clientPort = socket.remotePort;
+
+	console.log("Connected: " + clientAddress + ":" + clientPort);
+
+	// Don't timeout
+	socket.setKeepAlive(true);
+
+	// Disable "Nagle" algorithm for buffering
+	socket.setNoDelay(true);
+
+	// Set encoding to ASCII
+	socket.setEncoding("ascii");
+
+	socket.on('data', function (rawdata) {
+		
+		var data = rawdata.toString();
+		
+		try {
+
+			var originalMessage = JSON.parse(rawdata);
+			var messageDestination = originalMessage.dest;
+			var message = originalMessage.msg;
+
+			if(messageDestination == 0) {
+				// Message is to the server only
+
+				if(message.type == "hello") {
+					var clientType = message.client;
+					var nextIndex = clients.length + 1;
+
+					var clientId = -1;
+
+					if(clientType == "pc") {
+						clientId = 1;
+					} else {
+
+						var takenIds = [];
+
+						for(var i = 0; i < clients.length; ++i) {
+							if(clients[i].getClientType() != "mobile")
+								continue;
+
+							takenIds.push(clients[i].getId());
+						}
+
+						var desiredId = 2;
+
+						while(clientId < 0) {
+
+							// This id is free, take it
+							if(takenIds.indexOf(desiredId) == -1) {
+								clientId = desiredId;
+							} else {
+								desiredId++;
+							}
+						}
+					}
+
+
+					var newClientObj = new Client(clientAddress, clientPort, clientType, socket, 
+						clientId);
+
+					// Add new client to the array
+					var newLength = clients.push(newClientObj);
+					
+					// Print out new clients
+					console.log("Connected new client with id " + newClientObj.getId() +
+						" of type " + newClientObj.getClientType() +
+						" address: " + newClientObj.getAddress() + " on port: " + newClientObj.getPort());
+
+					// Send confirmation of successful registration
+					if(clientType == "mobile") {
+						var response = {
+							dest: clientId,
+							sender: 0,
+							msg : {
+								type: "yourId",
+								id: clientId
+							}
+						};
+
+						socket.write(JSON.stringify(response));
+					}
+				}
+				return;
+
+			} else if(messageDestination == 1) {
+
+				// Send it to PC client
+				var pcClient;
+
+				for(var i = 0; i < clients.length; i++) {
+					
+					if(clients[i].getClientType() != "pc")
+						continue;
+					
+					pcClient = clients[i];
+					break;
+				}
+
+				if(pcClient === undefined) {
+					console.error("PC client must be connected.");
+					return;
+				}
+
+				pcClient.socket.write(JSON.stringify(originalMessage));
+
+			} else if(messageDestination == -1) {
+				
+				// Send to EVERYONE
+				for(var i = 0; i < clients.length; i++) {
+
+					if(clients[i].type == "pc")
+						continue;
+
+					clients[i].socket.write(JSON.stringify(originalMessage));
+				}
+
+			} else {
+				
+				var clientIndex = -1;
+				for(var i = 0; i < clients.length; i++) {
+					if(clients[i].getId() == messageDestination) {
+						clientIndex = i;
+						break;
+					}
+				}
+
+				var currenClient = clients[clientIndex];
+				currenClient.socket.write(JSON.stringify(originalMessage));
+			}
 		}
-
-		socket.write("You said: " + data + " Thanks!");
-
+		catch(err)
+		{
+			console.log(err);
+		}
 	}).on('connect', function() {
-
-		socket.write("Hi " + client);
-
-		console.log(clients);
 
 	}).on('close', function() {
 		
-		socket.write("Bye " + client.getName);
-		clients.splice(clients.indexOf(client), 1);
-		
+		var clientIndex = -1;
+		for(var i = 0; i < clients.length; i++) {
+			if(clients[i].getAddress() == clientAddress && clients[i].getPort() == clientPort) {
+				clientIndex = i;
+			}
+		}
+
+		if(clientIndex >= 0 && clientIndex < clients.length) {
+
+			// Log disconnecting client
+			console.log("Client with id " + clients[clientIndex].getId() + " disconnected.");
+			// Remove client from the array
+			clients.splice(clientIndex, 1);
+		}
 
 	}).on('error', function (err){
-		console.log("Error: " + err);
+		console.log(err);
 	});
-
-}).listen(port, address);
+}
 
