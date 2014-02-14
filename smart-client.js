@@ -38,21 +38,23 @@ function processMessage(data) {
 			    
 			}
 			else if (message.type == "catchResult") {
+			    
+			    if(message.result == 1) {
+			        var throwTo;
+    			    do {
+    			        throwTo = players[Math.floor(Math.random() * (players.length))];
+    			    } while (throwTo.id == myId);
+    			    console.log('   < Sending message >');
+    			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
+    			    client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
+			    }
+			    
+			}
+			else if ((message.type == "newBall" && message.id == myId) || (message.type == "started" && message.startPlayer == myId)) {
 			 
 			    var throwTo;
 			    do {
 			        throwTo = players[Math.floor(Math.random() * (players.length))];
-			    } while (throwTo.id == myId);
-			    console.log('   < Sending message >');
-			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
-			    client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
-			    
-			}
-			else if ((message.type == "newBall" && message.id == myId) || (message.type == "started" && message["start-player"] == myId)) {
-			 
-			    var throwTo;
-			    do {
-			        throwTo = players[Math.floor(Math.random() * (players.length))];//players[Math.floor(Math.random() * (players.length - 0 + 1)) + 0];
 			    } while (throwTo.id == myId);
 			    console.log('   < Sending message >');
 			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
