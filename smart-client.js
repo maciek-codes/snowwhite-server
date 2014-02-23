@@ -82,13 +82,14 @@ function processMessage(data) {
 
 try {
 
+	var MacId = process.argv[2];
     client.connect(port, host, function () {
     
         console.log('< Connected to ' + host + ':' + port + ' >');
     
 	    console.log('   < Sending message >');
-	    console.log('   { "dest":0, "msg": {"type" : "hello", "client" : "mobile", "platform" : "Node Smart Client"} }');
-        client.write('{ "dest":0, "msg": {"type" : "hello", "client" : "mobile", "platform" : "Node Smart Client"} }');
+	    console.log('   { "dest":0, "msg": {"type" : "hello", "client" : "mobile", "platform" : "Node Smart Client","uniqueId" : ' + MacId + '} }');
+        client.write('{ "dest":0, "msg": {"type" : "hello", "client" : "mobile", "platform" : "Node Smart Client", "uniqueId" :"' + MacId + '"} }');
     
     });
     
@@ -130,8 +131,10 @@ try {
 	           console.log('{ "dest" : 0,  "msg" : { "type" : "goodbye" } }');
     		   client.write('{ "dest" : 0,  "msg" : { "type" : "goodbye" } }');
                process.exit();
-               
-          }
+              
+          } 
+
+          
         
     });
     
