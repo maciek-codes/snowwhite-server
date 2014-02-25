@@ -11,6 +11,7 @@ var client = new net.Socket();
 
 var players;
 var myId;
+var powerUps = [];
     
 function processMessage(data) {
     
@@ -44,10 +45,19 @@ function processMessage(data) {
     			    do {
     			        throwTo = players[Math.floor(Math.random() * (players.length))];
     			    } while (throwTo.id == myId);
-    			    console.log('   < Sending message >');
-    			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
-    			    client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + '} }');
+    			    setTimeout(function() {
+        			    console.log('   < Sending message >');
+        			    var powerUpMsg = "";
+        			    if(powerUps.length > 0) { powerUpMsg = ', "appliedPowerUps": { "type": "' + powerUps.pop() + '", "strength" : 1 } '; }
+        			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + powerUpMsg + '} }');
+        			    client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + powerUpMsg + '} }');
+                    }, Math.random() * 3000);
 			    }
+			    
+			}
+			else if (message.type == "awardedPowerUp") {
+			    
+			    powerUps.push(message.powerUp);
 			    
 			}
 			else if ((message.type == "newBall" && message.id == myId) || (message.type == "started" && message.startPlayer == myId)) {
