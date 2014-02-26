@@ -12,6 +12,8 @@ var client = new net.Socket();
 var players;
 var myId;
 var powerUps = [];
+
+var alreadyAppliedPowerUp = 0;
     
 function processMessage(data) {
     
@@ -35,6 +37,7 @@ function processMessage(data) {
 			        console.log('   < Sending message >');
 			        console.log('   { "dest":0, "msg": {"type" : "catch", "ballId" : '+ message.ballId + ', "sender" : ' + message.sender + '} }');
 			        client.write('{ "dest":0, "msg": {"type" : "catch", "ballId" : '+ message.ballId + ', "sender" : ' + message.sender + '} }');
+			        alreadyAppliedPowerUp = data.indexOf('appliedPowerUps');
 			    }
 			    
 			}
@@ -48,7 +51,9 @@ function processMessage(data) {
     			    setTimeout(function() {
         			    console.log('   < Sending message >');
         			    var powerUpMsg = "";
-        			    if(powerUps.length > 0) { powerUpMsg = ', "appliedPowerUps": { "type": "' + powerUps.pop() + '", "strength" : 1 } '; }
+        			    if(powerUps.length > 0 && alreadyAppliedPowerUp == -1) {
+        			         powerUpMsg = ', "appliedPowerUps": { "type": "' + powerUps.pop() + '", "strength" : 1 } ';
+        			    }
         			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + powerUpMsg + '} }');
         			    client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + powerUpMsg + '} }');
                     }, Math.random() * 3000);
