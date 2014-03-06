@@ -33,7 +33,7 @@ function processMessage(data) {
 
 			    // Randomly decide whether to catch the ball
 			    var r = Math.random();
-			    if (r < 0.5) {
+			    if (r < 0.1) {
 			        console.log('   < Sending message >');
 			        console.log('   { "dest":0, "msg": {"type" : "catch", "ballId" : '+ message.ballId + ', "sender" : ' + message.sender + '} }');
 			        client.write('{ "dest":0, "msg": {"type" : "catch", "ballId" : '+ message.ballId + ', "sender" : ' + message.sender + '} }');
@@ -57,13 +57,13 @@ function processMessage(data) {
                   var speedMsg = ', "speed":' + Math.ceil(Math.random() * 100);
         			    console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + speedMsg + powerUpMsg + '} }');
         			    client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.ballId +', "recipient" : ' + throwTo.id + speedMsg + powerUpMsg + '} }');
-                    }, Math.random() * 5000);
+                    }, 1000/*Math.random() * 5000*/);
 			    }
 
 			}
 			else if (message.type == "awardedPowerUp") {
 
-			    powerUps.push(message.powerUp);
+			    //powerUps.push(message.powerUp);
 
 			}
 			else if ((message.type == "newBall" && message.id == myId) || (message.type == "started" && message.startPlayer == myId)) {

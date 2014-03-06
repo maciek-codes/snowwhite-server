@@ -2,7 +2,7 @@ var net = require('net');
 var keypress = require('keypress');
 keypress(process.stdin);
 
-var host = '192.168.173.1';
+var host = '127.0.0.1';
 var port = 1337;
 
 var stdin = process.openStdin(); 
