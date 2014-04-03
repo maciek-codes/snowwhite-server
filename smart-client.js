@@ -35,6 +35,7 @@ function processMessage(data) {
 			    var r = Math.random();
 			    if (r < 0.7) {
 			        setTimeout(function() {
+
   			           console.log('   < Sending message >');
   			           console.log('   { "dest":0, "msg": {"type" : "catch", "ballId" : ' + message.ballId +  ', "tag" : "' + message.catchLocation  + '", "sender" : ' + message.sender + '} }');
   			           nextTag = message.catchLocation;
@@ -110,12 +111,30 @@ try {
 	var MacId = Math.floor(Math.random() * (10000000000000));
     client.connect(port, host, function () {
 
-        console.log('< Connected to ' + host + ':' + port + ' >');
+      console.log('< Connected to ' + host + ':' + port + ' >');
+      console.log('   < Sending message >');
 
-	    console.log('   < Sending message >');
-	    console.log('   { "dest":0, "msg": {"type" : "hello", "client" : "mobile", "platform" : "Node Smart Client","uniqueId" : ' + MacId + '} }');
-        client.write('{ "dest":0, "msg": {"type" : "hello", "client" : "mobile", "platform" : "Node Smart Client", "uniqueId" :"' + MacId + '"} }');
+      var icon =  Math.floor(Math.random()*10);
+      var name =  "Sir Example " + icon;
 
+      var message = {
+        dest: 0,
+        msg: {
+          type: "hello",
+          client: "mobile",
+          platform: "Node Smart Client",
+          uniqueId: MacId,
+          playerProfile: {
+            name: name,
+            icon: icon
+          }
+        }
+      };
+      
+      var messageString = JSON.stringify(message);
+
+	    console.log(messageString);
+      client.write(messageString);
     });
 
     // Add a 'data' event handler for the client socket
