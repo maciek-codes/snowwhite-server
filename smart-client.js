@@ -2,7 +2,7 @@ var net = require('net');
 var keypress = require('keypress');
 keypress(process.stdin);
 
-var host = '127.0.0.1'; //'192.168.1.5'; /*Replace with '127.0.0.1' for localhost*/
+var host = '192.168.1.5'; //'192.168.1.5'; /*Replace with '127.0.0.1' for localhost*/
 var port = 1337;
 
 var stdin = process.openStdin();
@@ -123,17 +123,13 @@ try {
           type: "hello",
           client: "mobile",
           platform: "Node Smart Client",
-          uniqueId: MacId,
-          playerProfile: {
-            name: name,
-            icon: icon
-          }
+          uniqueId: MacId.toString()
         }
       };
       
       var messageString = JSON.stringify(message);
 
-	    console.log(messageString);
+	    console.log("Sending hello: " + messageString);
       client.write(messageString);
     });
 
