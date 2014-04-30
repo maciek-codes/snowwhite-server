@@ -2,7 +2,7 @@ var net = require('net');
 var keypress = require('keypress');
 keypress(process.stdin);
 
-var host = '192.168.1.20'; //'192.168.1.5'; /*Replace with '127.0.0.1' for localhost*/
+var host = '127.0.0.1'; //'192.168.1.5'; /*Replace with '127.0.0.1' for localhost*/
 var port = 1337;
 
 var stdin = process.openStdin();
@@ -14,6 +14,8 @@ var myId;
 var powerUps = [];
 
 var alreadyAppliedPowerUp = 0;
+
+var doOnPlayerUpdate = null;  // Set this to a function, and it will be run when a player update message is received. Used by rejoin process, which needs to know players before throw can occur
 
 function processMessage(data) {
 
@@ -44,6 +46,23 @@ function processMessage(data) {
 			        }, Math.random() * 1000);
 			    }
 
+			}
+			else if (message.type == "rejoinGame") {
+
+               if(data.indexOf('caughtBall')!== -1) {
+                   doOnPlayerUpdate = function() {
+    			     var throwTo;
+        			 do {
+        			   throwTo = players[Math.floor(Math.random() * (players.length))];
+        			 } while (throwTo.id == myId);
+      	             console.log('   < Sending message >');
+                     var speedMsg = ', "speed":' + Math.ceil(Math.random() * 100);
+    			     console.log('   { "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.caughtBall.ballId +', "recipient" : ' + throwTo.id + speedMsg + '} }');
+    			     client.write('{ "dest":0, "msg": {"type" : "throw", "ballId" : '+ message.caughtBall.ballId + ', "recipient" : ' + throwTo.id + speedMsg + '} }');
+    			     doOnPlayerUpdate = null;
+                   }
+               }
+        
 			}
 			else if (message.type == "catchResult") {
 
@@ -89,6 +108,7 @@ function processMessage(data) {
 			    players = message.players;
 			    console.log("< Player update >");
 			    console.log(players);
+			    if(message.type == "update" && doOnPlayerUpdate) doOnPlayerUpdate();
 
 			}
 			else if (message.type == "removedFromGame") {
