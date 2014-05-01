@@ -134,7 +134,7 @@ try {
       console.log('< Connected to ' + host + ':' + port + ' >');
       console.log('   < Sending message >');
 
-      var icon =  Math.floor(Math.random()*10);
+      var icon =  Math.floor(Math.random()*9);
       var name =  "Sir Example " + icon;
 
       var message = {
@@ -143,7 +143,8 @@ try {
           type: "hello",
           client: "mobile",
           platform: "Node Smart Client",
-          uniqueId: MacId.toString()
+          uniqueId: MacId.toString(),
+          playerProfile: { "name": name, "icon" : icon }
         }
       };
       
