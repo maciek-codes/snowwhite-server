@@ -185,20 +185,20 @@ try {
 
     // Picks up Ctrl+C keypress to quit client with disconnect message
     stdin.on('keypress', function (chunk, key) {
-      if (key) {
         if (key.name == 'g') {
           console.log('< Sending message >');
           console.log('{ "dest" : 0,  "msg" : { "type" : "goodbye" } }');
           client.write('{ "dest" : 0,  "msg" : { "type" : "goodbye" } }');
           //process.exit();
-        } else if(key.name == 's') {
+        }
+        if(key.name == 's') {
           console.log('< Sending message >');
           console.log('{ "dest" : 0,  "msg" : { "type" : "startGame" } }');
           client.write('{ "dest" : 0,  "msg" : { "type" : "startGame" } }');
-        } else if (key.ctrl && key.name == 'c') {
+        }
+        if (key && key.ctrl && key.name == 'c') {
     		  process.exit();
     	  }
-      }
     });
 
 }
